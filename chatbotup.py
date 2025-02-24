@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 import streamlit as st
 import google.generativeai as genai
 import os
+import io
 from PIL import Image
 
 load_dotenv()
@@ -16,8 +17,19 @@ def get_gemini_response(question):
     return response
 
 def get_gemini_response_For_image(Image1):
-    image = Image.open(Image1)  
-    response = chat.send_message(image)
+    image = Image.open(Image1)
+    
+    # Convert the image to bytes
+    img_byte_arr = io.BytesIO()
+    image.save(img_byte_arr, format="JPEG")  # Convert to JPEG for compatibility
+    img_bytes = img_byte_arr.getvalue()
+
+    # Properly structured request
+    response = chat.send_message([
+        {"text": "Describe the contents of this image."},  # Text prompt is mandatory
+        {"inline_data": {"mime_type": "image/jpeg", "data": img_bytes}}
+    ])
+    
     return response
 
 #Frontend Streamlit
